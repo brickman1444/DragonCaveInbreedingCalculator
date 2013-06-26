@@ -74,6 +74,8 @@ def coefficientOfInbreeding(node):
     if(node == BinaryTree.THE_EMPTY_TREE):
         return 0
     
+    #print(node.getRoot())
+    
     print("calculating paths")
         
     listOfMotherPaths = []
@@ -95,8 +97,7 @@ def coefficientOfInbreeding(node):
     coefficient = 0
     for pathTuple in listOfPathTuples:
         commonAncestorNode = node.find(pathTuple[0][0])
-        print("common ancestor: " + str(commonAncestorNode))
-        coefficient += pow(.5, len(pathTuple[0]) + len(pathTuple[1]) - 3) * (1 + coefficientOfInbreeding(node.find(commonAncestorNode)))
+        coefficient += pow(.5, len(pathTuple[0]) + len(pathTuple[1]) - 3) * (1 + coefficientOfInbreeding(commonAncestorNode))
         
     return coefficient
 
@@ -114,4 +115,4 @@ while (True):
         tree = BinaryTree(ID)
         print("filling tree")
         tree = fillTree(tree)
-        print("Coefficient of Inbreeding: " + coefficientOfInbreeding(tree))
+        print("Coefficient of Inbreeding: " + str(coefficientOfInbreeding(tree)))
