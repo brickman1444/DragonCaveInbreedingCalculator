@@ -96,6 +96,9 @@ def COI(tree):
     return coefficient
 
 def coefficientOfRelationship(id1,id2):
+        if (id1 == id2):
+            return .5
+    
         tree1 = BinaryTree(id1)
         print("filling tree1")
         tree1 = fillTree(tree1)
