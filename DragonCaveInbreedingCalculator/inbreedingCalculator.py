@@ -50,31 +50,25 @@ def fillTree(node):
         return node
     
 def pathToRootChild(node):
-    list = [node.getRoot()]
+    nodeList = [node.getRoot()]
     while (node.getParent() != BinaryTree.THE_EMPTY_TREE):
-        list.append(node.getParent().getRoot())
+        nodeList.append(node.getParent().getRoot())
         node = node.getParent()
-    return list
+    return nodeList
     
-#Dragon test codes
-#Not inbred:
-#TNiK
-#SWUm
-#Inbred:
-#CLIF
-#dresI
-#Super Inbred:
-#mcb0 0.25000572204589844
+def coefficientOfInbreeding(idCode):
+        tree = BinaryTree(idCode)
+        print("filling tree")
+        tree = fillTree(tree)
+        return COI(tree)
+       
+def COI(tree):
+    #getLeft() gets mother
+    #getRight() gets father
+    #getParent() gets local child
     
-def coefficientOfInbreeding(node):
-    """getLeft() gets mother
-        getRight() gets father
-        getParent() gets local child"""
-    
-    if(node == BinaryTree.THE_EMPTY_TREE):
+    if(tree == BinaryTree.THE_EMPTY_TREE):
         return 0
-    
-    #print(node.getRoot())
     
     print("calculating paths")
         
@@ -96,23 +90,49 @@ def coefficientOfInbreeding(node):
     
     coefficient = 0
     for pathTuple in listOfPathTuples:
-        commonAncestorNode = node.find(pathTuple[0][0])
-        coefficient += pow(.5, len(pathTuple[0]) + len(pathTuple[1]) - 3) * (1 + coefficientOfInbreeding(commonAncestorNode))
+        commonAncestorNode = tree.find(pathTuple[0][0])
+        coefficient += pow(.5, len(pathTuple[0]) + len(pathTuple[1]) - 3) * (1 + COI(commonAncestorNode))
         
     return coefficient
 
-x = -1
+def coefficientOfRelationship(id1,id2):
+        tree1 = BinaryTree(id1)
+        print("filling tree1")
+        tree1 = fillTree(tree1)
+        
+        tree2 = BinaryTree(id2)
+        print("filling tree2")
+        tree2 = fillTree(tree2)
+        
+        hypotheticalChild = BinaryTree("Hypothetical Child")
+        hypotheticalChild.setLeft(tree1)
+        hypotheticalChild.setRight(tree2)
+        return 2 * COI(hypotheticalChild)
+
+#Dragon test codes
+#Not inbred:
+#TNiK
+#SWUm
+#Inbred:
+#CLIF
+#dresI 0.25
+#Super Inbred:
+#mcb0 0.25000572204589844
  
 while (True):
     x = input("""What would you like to do?
     0: Exit
-    1: Check Inbreeding Coefficient of a dragon
+    1: Check Coefficient of Inbreeding of a dragon
+    2: Check Coefficient of Relationship between two dragons
     """)
     if (x == '0'):
         break;
     elif (x == '1'):
         ID = input("What is the dragon's ID code?\n")
-        tree = BinaryTree(ID)
-        print("filling tree")
-        tree = fillTree(tree)
-        print("Coefficient of Inbreeding: " + str(coefficientOfInbreeding(tree)))
+        print("Coefficient of Inbreeding: " + str(coefficientOfInbreeding(ID)))
+    elif (x == '2'):
+        ID1 = input("What is the first dragon's ID code?\n")
+        ID2 = input("What is the second dragon's ID code?\n")
+        print("Coefficient of Relationship: " + str(coefficientOfRelationship(ID1,ID2)))
+    else:
+        print("Unknown Command")
