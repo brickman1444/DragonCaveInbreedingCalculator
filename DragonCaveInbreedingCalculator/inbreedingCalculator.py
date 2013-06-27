@@ -4,6 +4,7 @@ Created on Jun 23, 2013
 @author: Zac
 '''
 from urllib.request import urlopen
+import urllib.error
 from bs4 import BeautifulSoup
 from binarytree import BinaryTree
 from math import pow
@@ -57,10 +58,13 @@ def pathToRootChild(node):
     return nodeList
     
 def coefficientOfInbreeding(idCode):
-        tree = BinaryTree(idCode)
-        print("filling tree")
-        tree = fillTree(tree)
-        return COI(tree)
+    if( not idExists(idCode)):
+        return (idCode + " does not exist")
+    
+    tree = BinaryTree(idCode)
+    print("filling tree")
+    tree = fillTree(tree)
+    return COI(tree)
        
 def COI(tree):
     #getLeft() gets mother
@@ -96,6 +100,13 @@ def COI(tree):
     return coefficient
 
 def coefficientOfRelationship(id1,id2):
+    
+        if( not idExists(id1)):
+            return (id1 + " does not exist")
+       
+        if( not idExists(id2)):
+            return (id2 + " does not exist")
+    
         if (id1 == id2):
             return .5
     
@@ -111,6 +122,16 @@ def coefficientOfRelationship(id1,id2):
         hypotheticalChild.setLeft(tree1)
         hypotheticalChild.setRight(tree2)
         return 2 * COI(hypotheticalChild)
+
+#returns True if a dragon exists and False if a dragon doesn't
+def idExists(idCode):
+    try:
+        url = 'http://dragcave.net/view/' + idCode
+        page = urlopen(url).read()
+        BeautifulSoup(page)
+        return True
+    except urllib.error.HTTPError:
+        return False
 
 #Dragon test codes
 #Not inbred:
