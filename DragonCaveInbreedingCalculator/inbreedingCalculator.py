@@ -1,5 +1,6 @@
 '''
-Created on Jun 23, 2013
+V0.1 Created on Jun 23, 2013
+V0.2 Created on Jul 6, 2013
 
 @author: Zac
 '''
@@ -49,6 +50,50 @@ def fillTree(node):
         node.setLeft(fillTree(BinaryTree(parentTuple[0])))#Mother
         node.setRight(fillTree(BinaryTree(parentTuple[1])))#Father
         return node
+
+def idToLineageList(idCode):
+    url = 'http://dragcave.net/lineage/' + idCode
+    page = urlopen(url).read()
+    soup = BeautifulSoup(page)
+    #prettySoup = soup.table.prettify()
+    lineageList = list()
+    listOfTr = soup.table.find_all('tr')
+    for trTag in listOfTr:
+        rowList = list()
+        for tdTag in trTag.find_all('td'):
+            dragonTuple = (tdTag.a.img['alt'],int(tdTag['rowspan']))
+            rowList.append(dragonTuple)
+        lineageList.append(rowList)
+    
+    return lineageList
+        
+def lineageListToTree(lineageList):
+#     lineage = [[('sday',4),('T5jf',3),('S6wM',1)],
+#                [('tiYe',2),('M1Fb',1)],
+#                [('eVr2',1)],
+#                [('GqoB',1)],
+#                [('rHGt',1)]]
+      
+    root = BinaryTree(lineageList[0][0])
+    lineageList[0] = lineageList[0][1:]
+      
+    #root = BinaryTree(('z2qI',5))
+    current = root
+    stack = [BinaryTree(("Sentinel Node",-1)), root]
+     
+    for row in lineageList:
+        for cell in row:
+            previous = current
+            current = BinaryTree(cell)
+            if(previous.getRight() == BinaryTree.THE_EMPTY_TREE):
+                #print(str(current.getRoot()) + str(previous.getRoot()))
+                if(current.getRoot()[1] < previous.getRoot()[1]):
+                    stack.append(previous)
+                previous.setRight(current)
+            else:
+                previous.setLeft(current)
+        current = stack.pop()
+    return root
     
 def pathToRootChild(node):
     nodeList = [node.getRoot()]
@@ -64,6 +109,16 @@ def coefficientOfInbreeding(idCode):
     tree = BinaryTree(idCode)
     print("filling tree")
     tree = fillTree(tree)
+    return COI(tree)
+
+def coefficientOfInbreedingLineage(idCode):
+    if( not idExists(idCode)):
+        return (idCode + " does not exist")
+    
+    print("writing lineage list")
+    lineageList = idToLineageList(idCode)
+    print("filling tree from list")
+    tree = lineageListToTree(lineageList)
     return COI(tree)
        
 def COI(tree):
@@ -138,10 +193,12 @@ def idExists(idCode):
 #TNiK
 #SWUm
 #Inbred:
-#CLIF
+#CLIF 0.15625
 #dresI 0.25
 #Super Inbred:
 #mcb0 0.25000572204589844
+ 
+horizontalBar = "------------------------------------"
  
 while (True):
     x = input("""What would you like to do?
@@ -153,10 +210,11 @@ while (True):
         break;
     elif (x == '1'):
         ID = input("What is the dragon's ID code?\n")
-        print("Coefficient of Inbreeding: " + str(coefficientOfInbreeding(ID)))
+        print("Coefficient of Inbreeding: " + str(coefficientOfInbreedingLineage(ID)))
     elif (x == '2'):
         ID1 = input("What is the first dragon's ID code?\n")
         ID2 = input("What is the second dragon's ID code?\n")
         print("Coefficient of Relationship: " + str(coefficientOfRelationship(ID1,ID2)))
     else:
         print("Unknown Command")
+    print(horizontalBar)

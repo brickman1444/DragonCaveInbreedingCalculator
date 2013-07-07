@@ -1,3 +1,6 @@
+#Found on http://stackoverflow.com/questions/5448015/trees-in-python
+#Possibly originally from http://cs.uni.edu/~fienup/cs052f10/lectures/lec19_questions.pdf
+
 from collections import deque
 class EmptyTree(object):
     """Represents an empty tree."""
