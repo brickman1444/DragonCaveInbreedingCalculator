@@ -1,14 +1,16 @@
 '''
 V0.1 Created on Jun 23, 2013
 V0.2 Created on Jul 6, 2013
+V0.3 Created on Jul 7, 2013
 
-@author: Zac
+@author: Zac Gross
 '''
 from urllib.request import urlopen
 import urllib.error
 from bs4 import BeautifulSoup
 from binarytree import BinaryTree
 from math import pow
+import time
 
 #returns (motherID,fatherID) for bred dragons
 #returns ('','') for caveborn dragons
@@ -73,6 +75,15 @@ def lineageListToTree(lineageList):
 #                [('eVr2',1)],
 #                [('GqoB',1)],
 #                [('rHGt',1)]]
+    count = 0;#I don't understand why this has to start at 1 and not 0
+    for row in lineageList:
+        for cell in row:
+            count += 1
+    #print("size: ",count)
+    
+    #escape case for recursion
+    if(count == 1):
+        return BinaryTree(lineageList[0][0])
       
     root = BinaryTree(lineageList[0][0])
     lineageList[0] = lineageList[0][1:]
@@ -92,8 +103,24 @@ def lineageListToTree(lineageList):
                 previous.setRight(current)
             else:
                 previous.setLeft(current)
+        #recursive way to continue beyond one lineage page
+        tempLineageList = idToLineageList(current.getRoot()[0])
+        tempNode = lineageListToTree(tempLineageList)
+        
+        if (previous.getRight() == current):
+            previous.setRight(tempNode)
+        elif(previous.getLeft() == current):
+            previous.setLeft(tempNode)
+        
         current = stack.pop()
     return root
+
+def cleanUpTupleTree(node):
+    if (node.getRight() != BinaryTree.THE_EMPTY_TREE):
+        cleanUpTupleTree(node.getRight())
+    node.setRoot(node.getRoot()[0])
+    if (node.getLeft() != BinaryTree.THE_EMPTY_TREE):
+        cleanUpTupleTree(node.getLeft())
     
 def pathToRootChild(node):
     nodeList = [node.getRoot()]
@@ -119,6 +146,7 @@ def coefficientOfInbreedingLineage(idCode):
     lineageList = idToLineageList(idCode)
     print("filling tree from list")
     tree = lineageListToTree(lineageList)
+    cleanUpTupleTree(tree)
     return COI(tree)
        
 def COI(tree):
@@ -197,9 +225,14 @@ def idExists(idCode):
 #dresI 0.25
 #Super Inbred:
 #mcb0 0.25000572204589844
+#    25.863402761214587 seconds on lineage
+#    59.221194791205264 seconds on page by page
+ 
+#        print(str(time.clock() - startTime) + " seconds")
+#        startTime = time.clock()
  
 horizontalBar = "------------------------------------"
- 
+    
 while (True):
     x = input("""What would you like to do?
     0: Exit
@@ -211,6 +244,7 @@ while (True):
     elif (x == '1'):
         ID = input("What is the dragon's ID code?\n")
         print("Coefficient of Inbreeding: " + str(coefficientOfInbreedingLineage(ID)))
+
     elif (x == '2'):
         ID1 = input("What is the first dragon's ID code?\n")
         ID2 = input("What is the second dragon's ID code?\n")
