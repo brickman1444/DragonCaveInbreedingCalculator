@@ -53,6 +53,16 @@ def fillTree(node):
         node.setRight(fillTree(BinaryTree(parentTuple[1])))#Father
         return node
 
+deceasedDragonCounter = 0 
+deceasedDragonPlaceholderString = '@@@@@'   
+deceasedDragonPlaceholderStringLen = len(deceasedDragonPlaceholderString)
+
+def nextDragonTuple():
+    global deceasedDragonCounter
+    retTuple = (deceasedDragonPlaceholderString + str(deceasedDragonCounter),1)
+    deceasedDragonCounter += 1
+    return retTuple
+
 def idToLineageList(idCode):
     url = 'http://dragcave.net/lineage/' + idCode
     page = urlopen(url).read()
@@ -63,23 +73,20 @@ def idToLineageList(idCode):
     for trTag in listOfTr:
         rowList = list()
         for tdTag in trTag.find_all('td'):
-            dragonTuple = (tdTag.a.img['alt'],int(tdTag['rowspan']))
+            if tdTag.a is not None:
+                dragonTuple = (tdTag.a.img['alt'],int(tdTag['rowspan']))
+            else:
+                dragonTuple = nextDragonTuple()
             rowList.append(dragonTuple)
         lineageList.append(rowList)
     
     return lineageList
         
 def lineageListToTree(lineageList):
-#     lineage = [[('sday',4),('T5jf',3),('S6wM',1)],
-#                [('tiYe',2),('M1Fb',1)],
-#                [('eVr2',1)],
-#                [('GqoB',1)],
-#                [('rHGt',1)]]
-    count = 0;#I don't understand why this has to start at 1 and not 0
+    count = 0;
     for row in lineageList:
         for cell in row:
             count += 1
-    #print("size: ",count)
     
     #escape case for recursion
     if(count == 1):
@@ -103,14 +110,16 @@ def lineageListToTree(lineageList):
                 previous.setRight(current)
             else:
                 previous.setLeft(current)
+                
         #recursive way to continue beyond one lineage page
-        tempLineageList = idToLineageList(current.getRoot()[0])
-        tempNode = lineageListToTree(tempLineageList)
+        if (current.getRoot()[0][:deceasedDragonPlaceholderStringLen] != deceasedDragonPlaceholderString):
+            tempLineageList = idToLineageList(current.getRoot()[0])
+            tempNode = lineageListToTree(tempLineageList)
         
-        if (previous.getRight() == current):
-            previous.setRight(tempNode)
-        elif(previous.getLeft() == current):
-            previous.setLeft(tempNode)
+            if (previous.getRight() == current):
+                previous.setRight(tempNode)
+            elif(previous.getLeft() == current):
+                previous.setLeft(tempNode)
         
         current = stack.pop()
     return root
@@ -218,21 +227,19 @@ def idExists(idCode):
 
 #Dragon test codes
 #Not inbred:
-#TNiK
-#SWUm
+#TNiK 0
+#SWUm 0
 #Inbred:
 #CLIF 0.15625
 #dresI 0.25
 #Super Inbred:
 #mcb0 0.25000572204589844
-#    25.863402761214587 seconds on lineage
-#    59.221194791205264 seconds on page by page
- 
-#        print(str(time.clock() - startTime) + " seconds")
-#        startTime = time.clock()
- 
+#Deceased Ancestors:
+#BNZ5 0
+#uNF7 0
+
 horizontalBar = "------------------------------------"
-    
+     
 while (True):
     x = input("""What would you like to do?
     0: Exit
@@ -244,7 +251,7 @@ while (True):
     elif (x == '1'):
         ID = input("What is the dragon's ID code?\n")
         print("Coefficient of Inbreeding: " + str(coefficientOfInbreedingLineage(ID)))
-
+ 
     elif (x == '2'):
         ID1 = input("What is the first dragon's ID code?\n")
         ID2 = input("What is the second dragon's ID code?\n")
