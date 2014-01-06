@@ -140,23 +140,13 @@ def pathToRootChild(node):
         nodeList.append(node.getParent().getRoot())
         node = node.getParent()
     return nodeList
-    
-def coefficientOfInbreeding(idCode):
-    if( not idExists(idCode)):
-        return (idCode + " does not exist")
-    
-    tree = BinaryTree(idCode)
-    print("filling tree")
-    tree = fillTree(tree)
-    return COI(tree)
 
-def coefficientOfInbreedingLineage(idCode):
+def coefficientOfInbreeding(idCode):
     if( not idExists(idCode)):
         return (idCode + " does not exist")
     
     print("writing lineage list")
     lineageList = idToLineageList(idCode)
-    print(lineageList)
     print("filling tree from list")
     tree = lineageListToTree(lineageList)
     cleanUpTupleTree(tree)
@@ -196,30 +186,6 @@ def COI(tree):
     return coefficient
 
 def coefficientOfRelationship(id1,id2):
-    
-        if( not idExists(id1)):
-            return (id1 + " does not exist")
-       
-        if( not idExists(id2)):
-            return (id2 + " does not exist")
-    
-        if (id1 == id2):
-            return 1
-    
-        tree1 = BinaryTree(id1)
-        print("filling tree1")
-        tree1 = fillTree(tree1)
-        
-        tree2 = BinaryTree(id2)
-        print("filling tree2")
-        tree2 = fillTree(tree2)
-        
-        hypotheticalChild = BinaryTree("Hypothetical Child")
-        hypotheticalChild.setLeft(tree1)
-        hypotheticalChild.setRight(tree2)
-        return 2 * COI(hypotheticalChild)
-
-def coefficientOfRelationshipLineage(id1,id2):
     
         if( not idExists(id1)):
             return (id1 + " does not exist")
@@ -287,12 +253,12 @@ while (True):
         break;
     elif (x == '1'):
         ID = input("What is the dragon's ID code?\n")
-        print("Coefficient of Inbreeding: " + str(coefficientOfInbreedingLineage(ID)))
+        print("Coefficient of Inbreeding: " + str(coefficientOfInbreeding(ID)))
  
     elif (x == '2'):
         ID1 = input("What is the first dragon's ID code?\n")
         ID2 = input("What is the second dragon's ID code?\n")
-        print("Coefficient of Relationship: " + str(coefficientOfRelationshipLineage(ID1,ID2)))
+        print("Coefficient of Relationship: " + str(coefficientOfRelationship(ID1,ID2)))
     else:
         print("Unknown Command")
     print(horizontalBar)
