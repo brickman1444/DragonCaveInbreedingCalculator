@@ -3,7 +3,7 @@ V0.1 Created on Jun 23, 2013
 V0.2 Created on Jul 6, 2013
 V0.3 Created on Jul 7, 2013
 V0.4 Created on Jul 9, 2013
-V0.5 Created on Jan 1, 2014
+V0.5 Created on Jan 6, 2014
 
 @author: Zac Gross
 '''
@@ -65,8 +65,12 @@ def nextDragonTuple():
     deceasedDragonCounter += 1
     return retTuple
 
+lineagePageCount = 0
+
 def idToLineageList(idCode):
-    #print("opening lineage page for " + idCode)
+    print("opening lineage page for " + idCode)
+    global lineagePageCount
+    lineagePageCount += 1
     url = 'http://dragcave.net/lineage/' + idCode
     page = urlopen(url).read()
     soup = BeautifulSoup(page)
@@ -86,13 +90,9 @@ def idToLineageList(idCode):
     return lineageList
         
 def lineageListToTree(lineageList):
-    count = 0;
-    for row in lineageList:
-        for cell in row:
-            count += 1
     
     #escape case for recursion
-    if(count == 1):
+    if(len(lineageList[0]) == 1):
         return BinaryTree(lineageList[0][0])
       
     root = BinaryTree(lineageList[0][0])
@@ -106,6 +106,7 @@ def lineageListToTree(lineageList):
         for cell in row:
             previous = current
             current = BinaryTree(cell)
+            # fills in right node (father) first
             if(previous.getRight() == BinaryTree.THE_EMPTY_TREE):
                 #print(str(current.getRoot()) + str(previous.getRoot()))
                 if(current.getRoot()[1] < previous.getRoot()[1]):
@@ -115,15 +116,27 @@ def lineageListToTree(lineageList):
                 previous.setLeft(current)
                 
         #recursive way to continue beyond one lineage page
-        #if the current node's id string starts with the deceased placeholder string, then do not go to the lineage page
+        # runs at the end of every row
+        # if the current node's id string starts with the deceased placeholder string, then do not go to the lineage page
         if (current.getRoot()[0][:deceasedDragonPlaceholderStringLen] != deceasedDragonPlaceholderString):
-            tempLineageList = idToLineageList(current.getRoot()[0])
-            tempNode = lineageListToTree(tempLineageList)
-        
-            if (previous.getRight() == current):
-                previous.setRight(tempNode)
-            elif(previous.getLeft() == current):
-                previous.setLeft(tempNode)
+            
+            #count up number of nodes to get back to the root child
+            node = current
+            columnCounter = 1
+            while (node.getParent() != BinaryTree.THE_EMPTY_TREE):
+                columnCounter += 1
+                node = node.getParent()
+                
+            #if the number of nodes to get back to the root child = 12, then the lineage could go on 
+            #past the end of the lineage page and that dragon's lineage page must be loaded as well
+            if (columnCounter == 12):
+                tempLineageList = idToLineageList(current.getRoot()[0])
+                tempNode = lineageListToTree(tempLineageList)
+            
+                if (previous.getRight() == current):
+                    previous.setRight(tempNode)
+                elif(previous.getLeft() == current):
+                    previous.setLeft(tempNode)
         
         current = stack.pop()
     return root
@@ -148,11 +161,13 @@ def coefficientOfInbreeding(idCode):
     
     print("writing lineage list")
     lineageList = idToLineageList(idCode)
+    print(lineageList)
     print("filling tree from list")
     tree = lineageListToTree(lineageList)
     cleanUpTupleTree(tree)
     return COI(tree)
        
+# the math for getting the coefficient of inbreeding for the root node of a tree
 def COI(tree):
     #getLeft() gets mother
     #getRight() gets father
@@ -254,7 +269,9 @@ while (True):
         break;
     elif (x == '1'):
         ID = input("What is the dragon's ID code?\n")
+        lineagePageCount = 0
         print("Coefficient of Inbreeding: " + str(coefficientOfInbreeding(ID)))
+        print("Number of lineage pages loaded: " + str(lineagePageCount))
  
     elif (x == '2'):
         ID1 = input("What is the first dragon's ID code?\n")
