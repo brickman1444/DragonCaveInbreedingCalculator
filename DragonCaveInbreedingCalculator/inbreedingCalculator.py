@@ -65,6 +65,7 @@ def nextDragonTuple():
     return retTuple
 
 def idToLineageList(idCode):
+    #print("opening lineage page for " + idCode)
     url = 'http://dragcave.net/lineage/' + idCode
     page = urlopen(url).read()
     soup = BeautifulSoup(page)
@@ -113,6 +114,7 @@ def lineageListToTree(lineageList):
                 previous.setLeft(current)
                 
         #recursive way to continue beyond one lineage page
+        #if the current node's id string starts with the deceased placeholder string, then do not go to the lineage page
         if (current.getRoot()[0][:deceasedDragonPlaceholderStringLen] != deceasedDragonPlaceholderString):
             tempLineageList = idToLineageList(current.getRoot()[0])
             tempNode = lineageListToTree(tempLineageList)
@@ -130,7 +132,7 @@ def cleanUpTupleTree(node):
         cleanUpTupleTree(node.getRight())
     node.setRoot(node.getRoot()[0])
     if (node.getLeft() != BinaryTree.THE_EMPTY_TREE):
-        cleanUpTupleTree(node.getLeft())
+        cleanUpTupleTree(node.getLeft()) 
     
 def pathToRootChild(node):
     nodeList = [node.getRoot()]
@@ -154,6 +156,7 @@ def coefficientOfInbreedingLineage(idCode):
     
     print("writing lineage list")
     lineageList = idToLineageList(idCode)
+    print(lineageList)
     print("filling tree from list")
     tree = lineageListToTree(lineageList)
     cleanUpTupleTree(tree)
@@ -201,7 +204,7 @@ def coefficientOfRelationship(id1,id2):
             return (id2 + " does not exist")
     
         if (id1 == id2):
-            return .5
+            return 1
     
         tree1 = BinaryTree(id1)
         print("filling tree1")
@@ -210,6 +213,34 @@ def coefficientOfRelationship(id1,id2):
         tree2 = BinaryTree(id2)
         print("filling tree2")
         tree2 = fillTree(tree2)
+        
+        hypotheticalChild = BinaryTree("Hypothetical Child")
+        hypotheticalChild.setLeft(tree1)
+        hypotheticalChild.setRight(tree2)
+        return 2 * COI(hypotheticalChild)
+
+def coefficientOfRelationshipLineage(id1,id2):
+    
+        if( not idExists(id1)):
+            return (id1 + " does not exist")
+       
+        if( not idExists(id2)):
+            return (id2 + " does not exist")
+    
+        if (id1 == id2):
+            return 1
+        
+        print("writing lineage list1")
+        lineageList = idToLineageList(id1)
+        print("filling tree1 from list")
+        tree1 = lineageListToTree(lineageList)
+        cleanUpTupleTree(tree1)      
+        
+        print("writing lineage list2")
+        lineageList = idToLineageList(id2)
+        print("filling tree2 from list")
+        tree2 = lineageListToTree(lineageList)
+        cleanUpTupleTree(tree2)  
         
         hypotheticalChild = BinaryTree("Hypothetical Child")
         hypotheticalChild.setLeft(tree1)
@@ -230,14 +261,19 @@ def idExists(idCode):
 #Not inbred:
 #TNiK 0
 #SWUm 0
+
 #Inbred:
 #CLIF 0.15625
 #dresI 0.25
+
 #Super Inbred:
 #mcb0 0.25000572204589844
 #Deceased Ancestors:
 #BNZ5 0
 #uNF7 0
+
+#Coefficient of Relationship
+#RJWYL and RnX2Z full siblings 0.5
 
 horizontalBar = "------------------------------------"
      
@@ -256,7 +292,7 @@ while (True):
     elif (x == '2'):
         ID1 = input("What is the first dragon's ID code?\n")
         ID2 = input("What is the second dragon's ID code?\n")
-        print("Coefficient of Relationship: " + str(coefficientOfRelationship(ID1,ID2)))
+        print("Coefficient of Relationship: " + str(coefficientOfRelationshipLineage(ID1,ID2)))
     else:
         print("Unknown Command")
     print(horizontalBar)
